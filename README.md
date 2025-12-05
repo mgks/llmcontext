@@ -1,9 +1,9 @@
-# LLMContext
+# genctx (GenContext)
 
 <p>
-  <a href="https://www.npmjs.com/package/llmcontext"><img src="https://img.shields.io/npm/v/llmcontext.svg" alt="npm version"></a>
-  <a href="https://www.npmjs.com/package/llmcontext"><img src="https://img.shields.io/npm/d18m/llmcontext.svg" alt="npm downloads"></a>
-  <a href="https://github.com/mgks/llmcontext/blob/main/LICENSE"><img src="https://img.shields.io/github/license/mgks/llmcontext.svg" alt="license"></a>
+  <a href="https://www.npmjs.com/package/genctx"><img src="https://img.shields.io/npm/v/genctx.svg" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/genctx"><img src="https://img.shields.io/npm/d18m/genctx.svg" alt="npm downloads"></a>
+  <a href="https://github.com/mgks/genctx/blob/main/LICENSE"><img src="https://img.shields.io/github/license/mgks/genctx.svg" alt="license"></a>
 </p>
 
 A powerful CLI tool for generating high-signal, optimized code context for AI assistants and automated systems.
@@ -13,7 +13,7 @@ A powerful CLI tool for generating high-signal, optimized code context for AI as
 ## Key Features
 
 -   🤖 **AI-Ready Context**: Generates clean, structured context perfect for LLMs.
--   ⚙️ **Persistent Configuration**: Uses an `llmcontext.json` file for reproducible context generation.
+-   ⚙️ **Persistent Configuration**: Uses an `genctx.json` file for reproducible context generation.
 -   🧩 **Additive Presets**: Start with a solid baseline and layer on presets for technologies like `nodejs`, `python`, `rust`, and more.
 -   📄 **`.gitignore` Aware**: Can automatically use your project's `.gitignore` file for exclusions.
 -   🔧 **Granular Control**: Fine-tune your context with specific flags to add or remove files and extensions.
@@ -21,31 +21,31 @@ A powerful CLI tool for generating high-signal, optimized code context for AI as
 
 ## Quick Start
 
-Run this command in your project's root directory to get started. It will create a `llmcontext.json` config file and then generate the context instantly.
+Run this command in your project's root directory to get started. It will create a `genctx.json` config file and then generate the context instantly.
 
 ```bash
-npx llmcontext -p nodejs
+npx genctx -p nodejs
 ```
 
 **Recommended:** Install it globally for easier access:
 
 ```bash
-npm install -g llmcontext
+npm install -g genctx
 ```
 
 ## Usage
 
-After global installation, you can use the simple `llmcontext` command anywhere on your system.
+After global installation, you can use the simple `genctx` command anywhere on your system.
 
 ```bash
 # Run with the default Node.js preset
-llmcontext --preset nodejs
+genctx --preset nodejs
 
 # Run with the Android preset and output to a different file
-llmcontext -p android -o MyAndroidApp.md
+genctx -p android -o MyAndroidApp.md
 
 # Customize exclusions and add new extensions
-llmcontext --exclude 'docs/' --ext swift
+genctx --exclude 'docs/' --ext swift
 ```
 
 ### Options

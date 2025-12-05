@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const CONFIG_FILE_NAME = 'llmcontext.json';
+const CONFIG_FILE_NAME = 'genctx.json';
 
 // A sensible base that applies to most projects.
 const BASE_CONFIG = {
@@ -79,7 +79,7 @@ const PRESETS = {
 };
 
 /**
- * Loads the configuration from llmcontext.json if it exists.
+ * Loads the configuration from genctx.json if it exists.
  * @returns {object|null} The loaded configuration object or null if not found.
  */
 function loadConfig() {
@@ -97,7 +97,7 @@ function loadConfig() {
 }
 
 /**
- * Saves the configuration object to llmcontext.json.
+ * Saves the configuration object to genctx.json.
  * @param {object} config The configuration object to save.
  */
 function saveConfig(config) {
