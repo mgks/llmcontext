@@ -5,4 +5,4 @@ context.md
 .DS_Store
 
 # Exclude local configs if you have any
-aicontext.json
+llmcontext.json

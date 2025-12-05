@@ -141,7 +141,7 @@ async function generateContextFile(config, debug = false) {
 
   if (initialFiles.length === 0) {
       console.log("\n⚠️ No files found that match your criteria.");
-      console.log("   Run `aicontext --init` to create a config file and customize it.");
+      console.log("   Run `llmcontext --init` to create a config file and customize it.");
       return;
   }
 
@@ -173,7 +173,7 @@ async function generateContextFile(config, debug = false) {
 
   const projectName = path.basename(process.cwd());
 
-  let outputContent = `# Project Context: ${projectName}\n\nGenerated: ${new Date().toISOString()} w/ @mgks/aiContext\n\n`;
+  let outputContent = `# Project Context: ${projectName}\n\nGenerated: ${new Date().toISOString()} w/ llmcontext\n\n`;
   outputContent += `## Configuration Used\n\n\`\`\`json\n${JSON.stringify({ presets: config.presets, outputFile: config.outputFile, maxFileSizeKB: config.maxFileSizeKB }, null, 2)}\n\`\`\`\n\n`;
   outputContent += `## Directory Structure\n\n\`\`\`\n${generateTreeStructure(filesToProcess)}\`\`\`\n\n`;
   outputContent += `## File Contents\n\n`;
