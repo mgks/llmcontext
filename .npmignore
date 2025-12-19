@@ -1,0 +1,6 @@
+.git
+.github
+.DS_Store
+test/
+src/stripper.js
+.gitignore
