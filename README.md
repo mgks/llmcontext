@@ -46,6 +46,29 @@ Generate context for the current directory, respecting `.gitignore` and default 
 npx genctx
 ```
 
+### Process a Single File
+Generate context for just one file (useful for targeted debugging).
+```bash
+npx genctx --include src/main.js
+```
+
+### Programmatic API (Node.js)
+You can use `genctx` inside your own build scripts or tools.
+
+```javascript
+const { generate } = require('genctx');
+
+await generate({
+  include: ['src/**/*.ts'],
+  exclude: ['**/*.test.ts'],
+  outputFile: 'docs/context.md',
+  options: {
+    removeComments: true,
+    removeEmptyLines: true
+  }
+});
+```
+
 ### Optimize for Tokens
 Strip all comments and empty lines to fit a large codebase into a small context window.
 ```bash
@@ -64,6 +87,9 @@ Apply standard exclude patterns for a specific language ecosystem (e.g., ignorin
 npx genctx --preset nodejs
 npx genctx --preset python
 ```
+
+> **Need to clean raw code strings?**  
+> `genctx` is designed for files and directories. If you need to strip comments from raw strings or code blocks, check out **[clean-context](https://www.npmjs.com/package/clean-context)**.
 
 ## ⚙️ Configuration
 
