@@ -1,6 +1,6 @@
 {
   "name": "genctx",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "CLI to generate high-signal, token-optimized code context for AI models.",
   "main": "src/index.js",
   "bin": {
@@ -20,7 +20,7 @@
     "claude"
   ],
   "dependencies": {
-    "clean-context": "^0.1.0",
+    "clean-context": "^0.1.2",
     "fast-glob": "^3.3.3",
     "yargs": "^17.7.2"
   },
