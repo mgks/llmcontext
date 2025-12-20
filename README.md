@@ -118,17 +118,7 @@ This creates **`genctx.config.json`**:
 }
 ```
 
-### 🔒 Privacy by Default
-`genctx` automatically excludes sensitive and high-noise files to ensure your context is clean and secure.
-
-- **Security**: `*.pem`, `*.key`, `*.cert`, `*.pfx`, `id_rsa` are **hard-excluded**.
-- **Binaries**: Images, Videos, Archives, PDFs, and Executables are ignored.
-- **System**: `.DS_Store`, `.git`, Logs, and Lockfiles are skipped.
-- **Overrides**: You can force-include any of these by explicitly adding them to `include` (e.g., `include: ["src/logo.png"]`).
-
-### ⚙️ Configuration (v2)
-
-`genctx` looks for `genctx.config.json` in the current directory.
+> `genctx` looks for `genctx.config.json` in the current directory.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -154,6 +144,9 @@ This creates **`genctx.config.json`**:
 }
 ```
 
+### 🛡️ Smart Binary Detection
+`genctx` doesn't just rely on file extensions. It performs **content inspection** (reading the first 512 bytes) to detect binary files. This prevents accidental inclusion of compiled binaries, obscure media formats, or corrupted files that could break your LLM context window.
+
 ### 💡 Advanced: Whitelist Strategy
 
 The `include` option works as a strict **whitelist**. This allows you to cherry-pick specific files even if they might otherwise be ignored by a broad rule (as long as they are not explicitly in `exclude`).
@@ -170,6 +163,14 @@ The `include` option works as a strict **whitelist**. This allows you to cherry-
   "exclude": ["node_modules"]
 }
 ```
+
+### 🔒 Privacy by Default
+`genctx` automatically excludes sensitive and high-noise files to ensure your context is clean and secure.
+
+- **Security**: `*.pem`, `*.key`, `*.cert`, `*.pfx`, `id_rsa` are **hard-excluded**.
+- **Binaries**: Images, Videos, Archives, PDFs, and Executables are ignored.
+- **System**: `.DS_Store`, `.git`, Logs, and Lockfiles are skipped.
+- **Overrides**: You can force-include any of these by explicitly adding them to `include` (e.g., `include: ["src/logo.png"]`).
 
 ## 📦 Presets
 
