@@ -127,6 +127,10 @@ function applyCliModifications(currentConfig, argv) {
     newConfig.options.removeEmptyLines = argv.removeEmptyLines;
     modified = true;
   }
+  if (argv.treeFull !== undefined) {
+    newConfig.options.treeFull = argv.treeFull;
+    modified = true;
+  }
 
   return { config: newConfig, modified };
 }
@@ -155,6 +159,7 @@ async function run() {
     // --- Optimizations ---
     .option('remove-comments', { describe: 'Strip code comments to save tokens.', type: 'boolean' })
     .option('remove-empty-lines', { describe: 'Remove empty vertical whitespace.', type: 'boolean' })
+    .option('tree-full', { describe: 'Show complete directory structure (including skipped files).', type: 'boolean' })
 
     // --- Meta ---
     .version(packageJson.version)

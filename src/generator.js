@@ -192,15 +192,15 @@ async function findRelevantFiles(config) {
 
 async function generateContextFile(config) {
     console.log("\n🔍 Finding relevant files...");
-    const filesToProcess = await findRelevantFiles(config);
+    const allFiles = await findRelevantFiles(config);
 
-    if (filesToProcess.length === 0) {
+    if (allFiles.length === 0) {
         console.log("\n⚠️ No files found. Check your configuration.");
         return;
     }
 
-    // Sort: README first, then alphabetical
-    filesToProcess.sort((a, b) => {
+    // Sort files
+    allFiles.sort((a, b) => {
         const aName = path.basename(a).toLowerCase();
         const bName = path.basename(b).toLowerCase();
         if (aName === 'readme.md' && bName !== 'readme.md') return -1;
@@ -208,19 +208,102 @@ async function generateContextFile(config) {
         return a.localeCompare(b);
     });
 
-    console.log(`   Processing ${filesToProcess.length} files...`);
+    console.log(`   Processing ${allFiles.length} files...`);
 
     const stats = {
-        totalFilesFound: filesToProcess.length,
-        totalFilesProcessed: 0,
+        totalFilesFound: allFiles.length,
         includedFileContents: 0,
         skippedDueToSize: 0,
         skippedOther: 0,
         totalTokens: 0
     };
 
-    const projectName = path.basename(process.cwd());
+    // 1. BUFFER STAGE
+    // We process files first to see which ones actually make the cut
+    const processedContent = []; 
+    const treeFull = config.options?.treeFull || false;
 
+    for (const filePath of allFiles) {
+        // Stop if token limit reached (Hard Stop)
+        if (config.options?.maxTotalTokens > 0 && stats.totalTokens >= config.options.maxTotalTokens) {
+            console.warn(`⚠️  Context Limit Reached (${formatNumber(stats.totalTokens)} tokens). Stopping.`);
+            // If treeFull is FALSE, we stop adding to the tree here too.
+            // If treeFull is TRUE, we might continue just to list them? 
+            // Usually "Hard Stop" implies we stop work. Let's break loop.
+            break;
+        }
+
+        const relativeName = path.relative(process.cwd(), filePath);
+        
+        // Check Binary
+        if (isBinaryFile(filePath)) {
+            console.log(`   ⚠️  Skipped Binary: ${relativeName}`);
+            stats.skippedOther++;
+            continue; // Not added to processedContent
+        }
+
+        // Check Size
+        const currentFileSizeKB = getFileSizeInKB(filePath);
+        const maxKB = config.options?.maxFileSizeKB || 2048;
+        if (currentFileSizeKB > maxKB) {
+            console.log(`   ⚠️  Skipped Large File: ${relativeName} (${formatFileSize(currentFileSizeKB)})`);
+            stats.skippedDueToSize++;
+            continue; // Not added to processedContent
+        }
+
+        try {
+            let fileContent = fs.readFileSync(filePath, 'utf8');
+            const language = getLanguageFromExt(filePath);
+
+            if (config.options?.removeComments) {
+                fileContent = clean(fileContent, { lang: path.extname(filePath) });
+            }
+
+            if (config.options?.removeEmptyLines) {
+                fileContent = fileContent.replace(/^\s*[\r\n]/gm, "");
+            }
+
+            const fileTokens = estimateTokenCount(fileContent);
+
+            // Check File Token Limit
+            if (config.options?.maxFileTokens > 0 && fileTokens > config.options.maxFileTokens) {
+                console.log(`   ⚠️  Skipped Token Limit: ${relativeName} (~${formatNumber(fileTokens)} tokens)`);
+                stats.skippedDueToSize++;
+                continue; // Not added
+            }
+
+            // Success! Add to buffer
+            stats.includedFileContents++;
+            stats.totalTokens += fileTokens;
+            
+            const longestSequence = getLongestBacktickSequence(fileContent);
+            const fenceLength = Math.max(3, longestSequence + 1);
+            const fence = '`'.repeat(fenceLength);
+
+            processedContent.push({
+                path: filePath,
+                content: `### \`${relativeName}\`\n\n${fence}${language}\n${fileContent.trim() ? fileContent : '[EMPTY FILE]'}\n${fence}\n\n`
+            });
+
+        } catch (error) {
+            stats.skippedOther++;
+            console.warn(`   ❌ Read Error (${relativeName}): ${error.message}`);
+        }
+    }
+
+    // 2. TREE GENERATION STAGE
+    // Decide which files go into the tree based on the flag
+    let filesForTree = [];
+    if (treeFull) {
+        // Show ALL files found (even binaries/skipped ones)
+        filesForTree = allFiles;
+    } else {
+        // Show ONLY files that made it into the context
+        filesForTree = processedContent.map(item => item.path);
+    }
+
+    // 3. OUTPUT GENERATION STAGE
+    const projectName = path.basename(process.cwd());
     let outputContent = `# Project Context: ${projectName}\n\nGenerated: ${new Date().toISOString()} via genctx\n\n`;
 
     outputContent += `## Configuration\n\`\`\`json\n${JSON.stringify({
@@ -229,80 +312,14 @@ async function generateContextFile(config) {
         options: config.options
     }, null, 2)}\n\`\`\`\n\n`;
 
-    outputContent += `## Directory Structure\n\n\`\`\`\n${generateTreeStructure(filesToProcess)}\`\`\`\n\n`;
+    outputContent += `## Directory Structure\n\n\`\`\`\n${generateTreeStructure(filesForTree)}\`\`\`\n\n`;
+    
     outputContent += `## File Contents\n\n`;
+    outputContent += processedContent.map(p => p.content).join('');
 
-    for (const filePath of filesToProcess) {
-        // Enforce Total Token Limit
-        if (config.options?.maxTotalTokens > 0 && stats.totalTokens >= config.options.maxTotalTokens) {
-            console.warn(`⚠️  Context Limit Reached (${formatNumber(stats.totalTokens)} tokens). Stopping.`);
-            outputContent += `\n> **Context Limit Reached**: Further files omitted.\n`;
-            break;
-        }
-        
-        const currentFileSizeKB = getFileSizeInKB(filePath);
-        const relativeName = path.relative(process.cwd(), filePath);
-
-        // Config Options
-        const maxKB = config.options?.maxFileSizeKB || 2048;
-        const rmComments = config.options?.removeComments || false;
-        const rmEmpty = config.options?.removeEmptyLines || false;
-        const maxFileTokens = config.options?.maxFileTokens || 0;
-
-        // Binary Check
-        if (isBinaryFile(filePath)) {
-            console.log(`   ⚠️  Skipped Binary: ${relativeName}`);
-            // outputContent += `### \`${relativeName}\`\n\n*Skipped: Binary file detected*\n\n`;
-            stats.skippedOther++;
-            continue;
-        }
-
-        // File Size Check
-        if (currentFileSizeKB > maxKB) {
-            console.log(`   ⚠️  Skipped Large File: ${relativeName} (${formatFileSize(currentFileSizeKB)})`);
-            // outputContent += `### \`${relativeName}\`\n\n*Skipped: Size ${formatFileSize(currentFileSizeKB)} > ${maxKB} KB*\n\n`;
-            stats.skippedDueToSize++;
-            continue;
-        }
-
-        try {
-            let fileContent = fs.readFileSync(filePath, 'utf8');
-            const language = getLanguageFromExt(filePath); // For Markdown display
-
-            // --- OPTIMIZATION: Stripping Comments ---
-            if (rmComments) {
-                // Pass content + extension to the clean-context engine
-                fileContent = clean(fileContent, { lang: path.extname(filePath) });
-            }
-
-            // --- OPTIMIZATION: Removing Empty Lines ---
-            if (rmEmpty) {
-                fileContent = fileContent.replace(/^\s*[\r\n]/gm, "");
-            }
-
-            const fileTokens = estimateTokenCount(fileContent);
-
-            if (maxFileTokens > 0 && fileTokens > maxFileTokens) {                
-                console.log(`   ⚠️  Skipped Token Limit: ${relativeName} (~${formatNumber(fileTokens)} tokens)`);
-                // outputContent += `### \`${relativeName}\`\n\n*Skipped: Token count ~${formatNumber(fileTokens)} > ${maxFileTokens}*\n\n`;
-                stats.skippedDueToSize++;
-                continue;
-            }
-
-            stats.includedFileContents++;
-            stats.totalTokens += fileTokens;
-
-            const longestSequence = getLongestBacktickSequence(fileContent);
-            const fenceLength = Math.max(3, longestSequence + 1);
-            const fence = '`'.repeat(fenceLength);
-
-            outputContent += `### \`${relativeName}\`\n\n${fence}${language}\n${fileContent.trim() ? fileContent : '[EMPTY FILE]'}\n${fence}\n\n`;
-
-        } catch (error) {
-            console.warn(`   ❌ Read Error (${relativeName}): ${error.message}`);
-            // outputContent += `### \`${relativeName}\`\n\n*Read Error: ${error.message}*\n\n`;
-            stats.skippedOther++;
-        }
+    // Final Stats
+    if (stats.totalTokens >= config.options?.maxTotalTokens && config.options?.maxTotalTokens > 0) {
+        outputContent += `\n> **Context Limit Reached**: Further files were omitted to stay within ${formatNumber(config.options.maxTotalTokens)} tokens.\n`;
     }
 
     stats.totalTokens += estimateTokenCount(outputContent.replace(/```[^`]*?\n[\s\S]*?\n```/g, ''));
@@ -315,7 +332,8 @@ async function generateContextFile(config) {
     console.log("=".repeat(60));
     console.log(`  • Output File:    ${config.outputFile} (${formatFileSize(outputFileSizeKB)})`);
     console.log(`  • Token Estimate: ~${formatNumber(stats.totalTokens)}`);
-    console.log(`  • Files Included: ${stats.includedFileContents} / ${filesToProcess.length}`);
+    console.log(`  • Files Included: ${stats.includedFileContents} / ${allFiles.length}`);
+    console.log(`  • Tree Mode:      ${treeFull ? 'Full (All Files)' : 'Context Only (Clean)'}`);
     if (config.options?.removeComments) console.log(`  • Optimization:   Comments Stripped ✂️`);
     if (config.options?.removeEmptyLines) console.log(`  • Optimization:   Empty Lines Removed ✂️`);
     console.log("=".repeat(60));

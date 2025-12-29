@@ -16,6 +16,7 @@ const DEFAULT_CONFIG = {
   options: {
     removeComments: false,
     removeEmptyLines: false,
+    treeFull: false,
     maxFileSizeKB: 2048,
     maxTotalTokens: 0,
     maxFileTokens: 0,
