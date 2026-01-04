@@ -1,17 +1,17 @@
-# genctx (Generate Context)
-
-<p align="left">
-  <a href="https://www.npmjs.com/package/genctx"><img src="https://img.shields.io/npm/v/genctx.svg?style=flat-square&color=007acc" alt="npm version"></a>
-  <a href="https://www.npmjs.com/package/genctx"><img src="https://img.shields.io/npm/dt/genctx.svg?style=flat-square&color=success" alt="npm downloads"></a>
-  <a href="https://github.com/mgks/genctx/blob/main/LICENSE"><img src="https://img.shields.io/github/license/mgks/genctx.svg?style=flat-square&color=blue" alt="license"></a>
-  <a href="https://github.com/mgks/genctx/stargazers"><img src="https://img.shields.io/github/stars/mgks/genctx?style=flat-square&logo=github" alt="stars"></a>
-</p>
+# genctx
 
 **The AI Context Generator for Modern Developers.**
 
+<p>
+  <img src="https://img.shields.io/npm/v/genctx.svg?style=flat-square&color=d25353" alt="npm version">
+  <img src="https://img.shields.io/bundlephobia/minzip/genctx?style=flat-square&color=38bd24" alt="size">
+  <img src="https://img.shields.io/npm/dt/genctx.svg?style=flat-square&color=success&color=38bd24" alt="npm downloads">
+  <img src="https://img.shields.io/github/license/mgks/genctx.svg?style=flat-square&color=blue" alt="license">
+</p>
+
 `genctx` consolidates your entire codebase into a single, high-signal Markdown file optimized for Large Language Models (LLMs). It intelligently formats your project structure and source code, stripping noise to ensure AI models (like ChatGPT, Claude, Gemini) get the most relevant context with the fewest tokens.
 
-## 🌟 Why genctx?
+## Features
 
 - **Token Efficiency**: Save money and context window space. `genctx` can automatically strip comments and empty lines.
 - **Project Structure**: Provides a clear directory tree so the AI understands file relationships.
@@ -19,7 +19,7 @@
 - **Zero Config Start**: Just run it. It works out of the box for most projects.
 - **Detailed Control**: Fully configurable via `genctx.config.json` for advanced users.
 
-## 🚀 Quick Start
+## Quick Start
 
 Run instantly in any project folder using `npx`:
 
@@ -38,7 +38,7 @@ npm install -g genctx
 genctx
 ```
 
-## 🛠️ Usage & Examples
+## Usage
 
 ### Basic Run
 Generate context for the current directory, respecting `.gitignore` and default excludes.
@@ -108,7 +108,7 @@ npx genctx --tree-full
 
 > **Note**: This does **not** show files you explicitly excluded (like `node_modules`). Excluded files are always hidden.
 
-## ⚙️ Configuration
+## Configuration
 
 While CLI flags are great for quick runs, you can persist your settings in a configuration file.
 
@@ -136,7 +136,7 @@ This creates **`genctx.config.json`**:
 }
 ```
 
-### ⚠️ Important: How Excludes Work
+### Important: How Excludes Work
 `genctx` uses **strict glob patterns**, which behave differently than `.gitignore`.
 
 *   **To exclude a file in the root only**:
@@ -159,10 +159,10 @@ If you find a file isn't being excluded, make sure you are using the recursive `
 | `--remove-comments` | | Strip code comments to save tokens. |
 | `--remove-empty-lines` | | Remove empty vertical whitespace. |
 
-### 🛡️ Smart Binary Detection
+### Smart Binary Detection
 `genctx` doesn't just rely on file extensions. It performs **content inspection** (reading the first 512 bytes) to detect binary files. This prevents accidental inclusion of compiled binaries, obscure media formats, or corrupted files that could break your LLM context window.
 
-### 💡 Advanced: Whitelist Strategy
+### Advanced: Whitelist Strategy
 
 The `include` option works as a strict **whitelist**. This allows you to cherry-pick specific files even if they might otherwise be ignored by a broad rule (as long as they are not explicitly in `exclude`).
 
@@ -178,7 +178,7 @@ The `include` option works as a strict **whitelist**. This allows you to cherry-
 }
 ```
 
-### 🔒 Privacy by Default
+### Privacy by Default
 `genctx` automatically excludes sensitive and high-noise files to ensure your context is clean and secure.
 
 - **Security**: `*.pem`, `*.key`, `*.cert`, `*.pfx`, `id_rsa` are **hard-excluded**.
@@ -186,7 +186,7 @@ The `include` option works as a strict **whitelist**. This allows you to cherry-
 - **System**: `.DS_Store`, `.git`, Logs, and Lockfiles are skipped.
 - **Overrides**: You can force-include any of these by explicitly adding them to `include` (e.g., `include: ["src/logo.png"]`).
 
-## 📦 Presets
+## Presets
 
 Presets apply additive exclusion rules and default extensions for specific technologies.
 
@@ -206,7 +206,7 @@ Use multiple presets if your project is full-stack:
 npx genctx --preset nodejs --preset python
 ```
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Whether it's adding a new preset, fixing a bug, or improving documentation.
 
